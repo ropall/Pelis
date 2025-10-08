@@ -48,11 +48,6 @@ const MediaSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Productora',
         required: [true, 'La productora es obligatoria']
-    },
-    estado: {
-        type: Boolean,
-        default: true,
-        required: true
     }
 })
 

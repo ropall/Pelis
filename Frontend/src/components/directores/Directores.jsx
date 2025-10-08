@@ -3,9 +3,9 @@ import { obtenerDirectores, crearDirector, editarDirector, eliminarDirector } fr
 
 export default function Directores() {
   const [directores, setDirectores] = useState([])
-  const [nuevoDirector, setNuevoDirector] = useState({ nombre: "", apellido: "", nacionalidad: "" })
+  const [nuevoDirector, setNuevoDirector] = useState({ nombres: "", estado: true })
   const [directorEditando, setDirectorEditando] = useState(null)
-  const [directorEditado, setDirectorEditado] = useState({ nombre: "", apellido: "", nacionalidad: "" })
+  const [directorEditado, setDirectorEditado] = useState({ nombres: "", estado: true })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -26,16 +26,14 @@ export default function Directores() {
 
   const handleAgregarDirector = async (e) => {
     e.preventDefault()
-    const nombre = nuevoDirector.nombre?.trim() || ""
-    const apellido = nuevoDirector.apellido?.trim() || ""
-    if (!nombre || !apellido) return
+    const nombres = nuevoDirector.nombres?.trim() || ""
+    if (!nombres) return
     try {
       await crearDirector({
-        nombre,
-        apellido,
-        nacionalidad: nuevoDirector.nacionalidad?.trim() || ""
+        nombres,
+        estado: nuevoDirector.estado
       })
-      setNuevoDirector({ nombre: "", apellido: "", nacionalidad: "" })
+      setNuevoDirector({ nombres: "", estado: true })
       setMostrarFormulario(false)
       listarDirectores()
     } catch (error) {
@@ -44,26 +42,23 @@ export default function Directores() {
   }
 
   const handleEditarDirector = (director) => {
-    setDirectorEditando(director.id)
+    setDirectorEditando(director._id)
     setDirectorEditado({ 
-      nombre: director.nombre || "", 
-      apellido: director.apellido || "", 
-      nacionalidad: director.nacionalidad || "" 
+      nombres: director.nombres || "", 
+      estado: director.estado !== undefined ? director.estado : true
     })
   }
 
   const handleGuardarEdicion = async () => {
-    const nombre = directorEditado.nombre?.trim() || ""
-    const apellido = directorEditado.apellido?.trim() || ""
-    if (!nombre || !apellido) return
+    const nombres = directorEditado.nombres?.trim() || ""
+    if (!nombres) return
     try {
       await editarDirector(directorEditando, {
-        nombre,
-        apellido,
-        nacionalidad: directorEditado.nacionalidad?.trim() || ""
+        nombres,
+        estado: directorEditado.estado
       })
       setDirectorEditando(null)
-      setDirectorEditado({ nombre: "", apellido: "", nacionalidad: "" })
+      setDirectorEditado({ nombres: "", estado: true })
       listarDirectores()
     } catch (error) {
       setError("No se pudo actualizar el director")
@@ -72,7 +67,7 @@ export default function Directores() {
 
   const handleCancelarEdicion = () => {
     setDirectorEditando(null)
-    setDirectorEditado({ nombre: "", apellido: "", nacionalidad: "" })
+    setDirectorEditado({ nombres: "", estado: true })
   }
 
   const handleEliminarDirector = async (id) => {
@@ -135,14 +130,19 @@ export default function Directores() {
           <div className="card-header bg-primary text-white">Nuevo Director</div>
           <div className="card-body">
             <form className="row g-2" onSubmit={handleAgregarDirector}>
-              <div className="col-md-4">
-                <input className="form-control" placeholder="Nombre *" value={nuevoDirector.nombre} onChange={(e)=>setNuevoDirector({...nuevoDirector, nombre:e.target.value})} required />
+              <div className="col-md-8">
+                <input className="form-control" placeholder="Nombres del director *" value={nuevoDirector.nombres} onChange={(e)=>setNuevoDirector({...nuevoDirector, nombres:e.target.value})} required />
               </div>
-              <div className="col-md-4">
-                <input className="form-control" placeholder="Apellido *" value={nuevoDirector.apellido} onChange={(e)=>setNuevoDirector({...nuevoDirector, apellido:e.target.value})} required />
-              </div>
-              <div className="col-md-3">
-                <input className="form-control" placeholder="Nacionalidad" value={nuevoDirector.nacionalidad} onChange={(e)=>setNuevoDirector({...nuevoDirector, nacionalidad:e.target.value})} />
+              <div className="col-md-3 d-flex align-items-center">
+                <div className="form-check">
+                  <input 
+                    className="form-check-input" 
+                    type="checkbox" 
+                    checked={nuevoDirector.estado}
+                    onChange={(e)=>setNuevoDirector({...nuevoDirector, estado:e.target.checked})}
+                  />
+                  <label className="form-check-label">Estado activo</label>
+                </div>
               </div>
               <div className="col-md-1 d-grid">
                 <button className="btn btn-primary" type="submit">Guardar</button>
@@ -161,34 +161,47 @@ export default function Directores() {
             <table className="table mb-0 align-middle">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Apellido</th>
-                  <th>Nacionalidad</th>
+                  <th>Nombres</th>
+                  <th>Estado</th>
+                  <th>Fecha Creación</th>
+                  <th>Fecha Actualización</th>
                   <th>ID</th>
                   <th className="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {directores.map((d, index) => (
-                  <tr key={d.id || `director-${index}`}>
+                  <tr key={d._id || `director-${index}`}>
                     <td>
-                      {directorEditando === d.id ? (
-                        <input className="form-control form-control-sm" value={directorEditado.nombre} onChange={(e)=>setDirectorEditado({...directorEditado, nombre:e.target.value})} />
-                      ) : d.nombre}
+                      {directorEditando === d._id ? (
+                        <input className="form-control form-control-sm" value={directorEditado.nombres} onChange={(e)=>setDirectorEditado({...directorEditado, nombres:e.target.value})} />
+                      ) : d.nombres}
                     </td>
                     <td>
-                      {directorEditando === d.id ? (
-                        <input className="form-control form-control-sm" value={directorEditado.apellido} onChange={(e)=>setDirectorEditado({...directorEditado, apellido:e.target.value})} />
-                      ) : d.apellido}
+                      {directorEditando === d._id ? (
+                        <select 
+                          className="form-select form-select-sm" 
+                          value={directorEditado.estado}
+                          onChange={(e)=>setDirectorEditado({...directorEditado, estado:e.target.value === 'true'})}
+                        >
+                          <option value="true">Activo</option>
+                          <option value="false">Inactivo</option>
+                        </select>
+                      ) : (
+                        <span className={`badge ${d.estado ? 'bg-success' : 'bg-danger'}`}>
+                          {d.estado ? 'Activo' : 'Inactivo'}
+                        </span>
+                      )}
                     </td>
-                    <td>
-                      {directorEditando === d.id ? (
-                        <input className="form-control form-control-sm" value={directorEditado.nacionalidad} onChange={(e)=>setDirectorEditado({...directorEditado, nacionalidad:e.target.value})} />
-                      ) : (d.nacionalidad || '—')}
+                    <td className="small text-muted">
+                      {d.fechaCreacion ? new Date(d.fechaCreacion).toLocaleDateString() : '—'}
                     </td>
-                    <td className="small text-muted">{d.id}</td>
+                    <td className="small text-muted">
+                      {d.fechaActualizacion ? new Date(d.fechaActualizacion).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="small text-muted">{d._id}</td>
                     <td className="text-end">
-                      {directorEditando === d.id ? (
+                      {directorEditando === d._id ? (
                         <>
                           <button className="btn btn-sm btn-success me-2" onClick={handleGuardarEdicion}>Guardar</button>
                           <button className="btn btn-sm btn-outline-secondary" onClick={handleCancelarEdicion}>Cancelar</button>
@@ -196,7 +209,7 @@ export default function Directores() {
                       ) : (
                         <>
                           <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>handleEditarDirector(d)}>Editar</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={()=>handleEliminarDirector(d.id)}>Eliminar</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={()=>handleEliminarDirector(d._id)}>Eliminar</button>
                         </>
                       )}
                     </td>

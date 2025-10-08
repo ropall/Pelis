@@ -1,3 +1,46 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Estilos personalizados */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Animaciones personalizadas */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover effects personalizados */
+.hover-scale {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Colores personalizados */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}

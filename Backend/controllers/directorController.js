@@ -82,11 +82,26 @@ const updateDirector = async (req = request, res = response) => {
 	}
 }
 
+const deleteDirector = async (req = request, res = response) => {
+	try {
+		const { id } = req.params
+		const directorEliminado = await Director.findByIdAndDelete(id)
+		if (!directorEliminado) {
+			return res.status(404).json({ msj: 'Director no encontrado' })
+		}
+		return res.json(directorEliminado)
+	} catch (error) {
+		console.log(error)
+		return res.status(500).json({ msj: 'Error en el servidor' })
+	}
+}
+
 module.exports = {
 	createDirector,
 	getDirectores,
 	getDirectoresByEstado,
-	updateDirector
+	updateDirector,
+	deleteDirector
 }
 
 

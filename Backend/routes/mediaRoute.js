@@ -3,19 +3,9 @@ const {
 	createMedia,
 	getMedias,
 	getMediaById,
-	getMediasByGenero,
-	getMediasByAño,
-	getMediasByEstado,
 	updateMedia,
 	deleteMedia
 } = require('../controllers/mediaController')
-const { 
-	validarSerialUnico, 
-	validarUrlUnica, 
-	validarGeneroActivo,
-	validarDirectorActivo,
-	validarProductoraActiva
-} = require('../middlewares/mediaMiddleware')
 
 const router = Router()
 
@@ -39,7 +29,6 @@ const router = Router()
  *           schema:
  *             type: object
  *             required:
- *               - serial
  *               - titulo
  *               - sinopsis
  *               - url
@@ -48,9 +37,6 @@ const router = Router()
  *               - director
  *               - productora
  *             properties:
- *               serial:
- *                 type: string
- *                 example: "MOV001"
  *               titulo:
  *                 type: string
  *                 example: "Inception"
@@ -75,18 +61,13 @@ const router = Router()
  *               productora:
  *                 type: string
  *                 example: "64a1b2c3d4e5f6789012347"
- *               estado:
- *                 type: boolean
- *                 example: true
  *     responses:
  *       201:
  *         description: Media creada exitosamente
- *       400:
- *         description: Validación fallida, serial/URL duplicado, género/director/productora inactivo
  *       500:
  *         description: Error en el servidor
  */
-router.post('/', [validarSerialUnico, validarUrlUnica, validarGeneroActivo, validarDirectorActivo, validarProductoraActiva], createMedia)
+router.post('/', createMedia)
 
 /**
  * @swagger
@@ -101,71 +82,6 @@ router.post('/', [validarSerialUnico, validarUrlUnica, validarGeneroActivo, vali
  *         description: Error en el servidor
  */
 router.get('/', getMedias)
-
-/**
- * @swagger
- * /media/estado:
- *   get:
- *     summary: Lista media por estado
- *     tags: [Media]
- *     parameters:
- *       - in: query
- *         name: estado
- *         schema:
- *           type: boolean
- *         required: true
- *         description: Estado de la media (true o false)
- *     responses:
- *       200:
- *         description: Lista filtrada de media
- *       400:
- *         description: Falta el estado
- *       500:
- *         description: Error en el servidor
- */
-router.get('/estado', getMediasByEstado)
-
-/**
- * @swagger
- * /media/genero/{generoId}:
- *   get:
- *     summary: Lista media por género
- *     tags: [Media]
- *     parameters:
- *       - in: path
- *         name: generoId
- *         schema:
- *           type: string
- *         required: true
- *         description: ID del género
- *     responses:
- *       200:
- *         description: Lista de media por género
- *       500:
- *         description: Error en el servidor
- */
-router.get('/genero/:generoId', getMediasByGenero)
-
-/**
- * @swagger
- * /media/año/{año}:
- *   get:
- *     summary: Lista media por año de estreno
- *     tags: [Media]
- *     parameters:
- *       - in: path
- *         name: año
- *         schema:
- *           type: number
- *         required: true
- *         description: Año de estreno
- *     responses:
- *       200:
- *         description: Lista de media por año
- *       500:
- *         description: Error en el servidor
- */
-router.get('/año/:año', getMediasByAño)
 
 /**
  * @swagger
@@ -210,9 +126,6 @@ router.get('/:id', getMediaById)
  *           schema:
  *             type: object
  *             properties:
- *               serial:
- *                 type: string
- *                 example: "MOV002"
  *               titulo:
  *                 type: string
  *                 example: "The Dark Knight"
@@ -237,20 +150,15 @@ router.get('/:id', getMediaById)
  *               productora:
  *                 type: string
  *                 example: "64a1b2c3d4e5f6789012347"
- *               estado:
- *                 type: boolean
- *                 example: true
  *     responses:
  *       200:
  *         description: Media actualizada
- *       400:
- *         description: Validación fallida, serial/URL duplicado, género/director/productora inactivo
  *       404:
  *         description: Media no encontrada
  *       500:
  *         description: Error en el servidor
  */
-router.put('/:id', [validarSerialUnico, validarUrlUnica, validarGeneroActivo, validarDirectorActivo, validarProductoraActiva], updateMedia)
+router.put('/:id', updateMedia)
 
 /**
  * @swagger

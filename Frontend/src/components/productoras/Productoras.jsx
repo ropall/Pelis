@@ -3,9 +3,9 @@ import { obtenerProductoras, crearProductora, editarProductora, eliminarProducto
 
 export default function Productoras() {
   const [productoras, setProductoras] = useState([])
-  const [nuevaProductora, setNuevaProductora] = useState({ nombre: "", slogan: "", descripcion: "" })
+  const [nuevaProductora, setNuevaProductora] = useState({ nombre: "", slogan: "", descripcion: "", estado: true })
   const [productoraEditando, setProductoraEditando] = useState(null)
-  const [productoraEditada, setProductoraEditada] = useState({ nombre: "", slogan: "", descripcion: "" })
+  const [productoraEditada, setProductoraEditada] = useState({ nombre: "", slogan: "", descripcion: "", estado: true })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -34,9 +34,10 @@ export default function Productoras() {
         await crearProductora({
           nombre,
           slogan: nuevaProductora.slogan?.trim() || "",
-          descripcion: nuevaProductora.descripcion?.trim() || ""
+          descripcion: nuevaProductora.descripcion?.trim() || "",
+          estado: nuevaProductora.estado
         })
-        setNuevaProductora({ nombre: "", slogan: "", descripcion: "" })
+        setNuevaProductora({ nombre: "", slogan: "", descripcion: "", estado: true })
         setMostrarFormulario(false)
         listarProductoras()
       } catch (error) {
@@ -46,11 +47,12 @@ export default function Productoras() {
   }
 
   const handleEditarProductora = (productora) => {
-    setProductoraEditando(productora.id)
+    setProductoraEditando(productora._id)
     setProductoraEditada({ 
       nombre: productora.nombre || "", 
       slogan: productora.slogan || "", 
-      descripcion: productora.descripcion || "" 
+      descripcion: productora.descripcion || "",
+      estado: productora.estado !== undefined ? productora.estado : true
     })
   }
 
@@ -62,10 +64,11 @@ export default function Productoras() {
         await editarProductora(productoraEditando, {
           nombre,
           slogan: productoraEditada.slogan?.trim() || "",
-          descripcion: productoraEditada.descripcion?.trim() || ""
+          descripcion: productoraEditada.descripcion?.trim() || "",
+          estado: productoraEditada.estado
         })
         setProductoraEditando(null)
-        setProductoraEditada({ nombre: "", slogan: "", descripcion: "" })
+        setProductoraEditada({ nombre: "", slogan: "", descripcion: "", estado: true })
         listarProductoras()
       } catch (error) {
         console.log(error)
@@ -75,7 +78,7 @@ export default function Productoras() {
 
   const handleCancelarEdicion = () => {
     setProductoraEditando(null)
-    setProductoraEditada({ nombre: "", slogan: "", descripcion: "" })
+    setProductoraEditada({ nombre: "", slogan: "", descripcion: "", estado: true })
   }
 
   const handleEliminarProductora = async (id) => {
@@ -95,25 +98,27 @@ export default function Productoras() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-        <span className="ml-2 text-gray-600">Cargando productoras...</span>
+      <div className="d-flex align-items-center justify-content-center py-4">
+        <div className="spinner-border text-warning me-2" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <span className="text-muted">Cargando productoras...</span>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="alert alert-danger" role="alert">
+        <div className="d-flex align-items-center">
+          <svg width="20" height="20" className="text-danger me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="text-red-800">{error}</span>
+          <span>{error}</span>
         </div>
         <button 
           onClick={listarProductoras}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="btn btn-sm btn-danger mt-2"
         >
           Reintentar
         </button>
@@ -122,45 +127,31 @@ export default function Productoras() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container py-3">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          🎬 Gestión de Productoras
-        </h2>
-        <p className="text-gray-600">
-          Administra las productoras de películas
-        </p>
+      <div className="text-center mb-3">
+        <h2 className="h4 fw-bold mb-1">🎬 Gestión de Productoras</h2>
+        <p className="text-muted">Administra las productoras de películas</p>
       </div>
 
       {/* Estado de los datos */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-orange-800">Estado de los Datos</h3>
-            <p className="text-orange-600">
-              Productoras cargadas: {productoras.length}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-orange-600">
-              Servidor: {productoras.length > 0 ? '✅ Conectado' : '⚠️ Sin datos'}
-            </p>
-          </div>
+      <div className="alert alert-warning d-flex justify-content-between" role="alert">
+        <div>
+          <h6 className="mb-0">Estado de los Datos</h6>
+          <small>Productoras cargadas: {productoras.length}</small>
+        </div>
+        <div className="text-end">
+          <small className="text-warning">Servidor: {productoras.length > 0 ? '✅ Conectado' : '⚠️ Sin datos'}</small>
         </div>
       </div>
 
       {/* Botón para agregar nueva productora */}
-      <div className="text-center">
+      <div className="mb-3">
         <button 
-          className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white transition-all duration-200 ${
-            mostrarFormulario 
-              ? 'bg-gray-500 hover:bg-gray-600 focus:ring-gray-500' 
-              : 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
-          } focus:outline-none focus:ring-2 focus:ring-offset-2`}
+          className={`btn ${mostrarFormulario ? 'btn-secondary' : 'btn-warning'}`}
           onClick={() => setMostrarFormulario(!mostrarFormulario)}
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="20" height="20" className="me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           {mostrarFormulario ? 'Cancelar' : 'Agregar Nueva Productora'}
@@ -169,19 +160,19 @@ export default function Productoras() {
 
       {/* Formulario para agregar productora */}
       {mostrarFormulario && (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-white mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="card mb-3">
+          <div className="card-header bg-warning text-dark">
+            <div className="d-flex align-items-center">
+              <svg width="24" height="24" className="me-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              <h3 className="text-xl font-semibold text-white">Nueva Productora</h3>
+              <h3 className="h5 mb-0">Nueva Productora</h3>
             </div>
           </div>
-          <div className="p-6">
-            <form onSubmit={handleAgregarProductora} className="space-y-6">
-              <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="card-body">
+            <form onSubmit={handleAgregarProductora}>
+              <div className="mb-3">
+                <label htmlFor="nombre" className="form-label">
                   Nombre de la Productora *
                 </label>
                 <input
@@ -190,12 +181,12 @@ export default function Productoras() {
                   value={nuevaProductora.nombre}
                   onChange={(e) => setNuevaProductora({...nuevaProductora, nombre: e.target.value})}
                   placeholder="Ej: Warner Bros, Disney, Netflix..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200"
+                  className="form-control"
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="slogan" className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="mb-3">
+                <label htmlFor="slogan" className="form-label">
                   Slogan
                 </label>
                 <input
@@ -204,11 +195,11 @@ export default function Productoras() {
                   value={nuevaProductora.slogan}
                   onChange={(e) => setNuevaProductora({...nuevaProductora, slogan: e.target.value})}
                   placeholder="Ej: 'The Magic of Disney', 'Just Do It'..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200"
+                  className="form-control"
                 />
               </div>
-              <div>
-                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="mb-3">
+                <label htmlFor="descripcion" className="form-label">
                   Descripción
                 </label>
                 <textarea
@@ -217,25 +208,39 @@ export default function Productoras() {
                   onChange={(e) => setNuevaProductora({...nuevaProductora, descripcion: e.target.value})}
                   placeholder="Descripción de la productora, historia, especialidades..."
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 resize-none"
+                  className="form-control"
                 />
               </div>
-              <div className="flex space-x-4">
+              <div className="mb-3">
+                <div className="form-check">
+                  <input 
+                    className="form-check-input" 
+                    type="checkbox" 
+                    id="estado"
+                    checked={nuevaProductora.estado}
+                    onChange={(e) => setNuevaProductora({...nuevaProductora, estado: e.target.checked})}
+                  />
+                  <label className="form-check-label" htmlFor="estado">
+                    Estado activo
+                  </label>
+                </div>
+              </div>
+              <div className="d-flex gap-3">
                 <button 
                   type="submit" 
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                  className="btn btn-warning flex-fill"
                 >
-                  <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg width="20" height="20" className="me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Guardar Productora
                 </button>
                 <button 
                   type="button" 
-                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  className="btn btn-secondary flex-fill"
                   onClick={() => setMostrarFormulario(false)}
                 >
-                  <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg width="20" height="20" className="me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                   Cancelar
@@ -248,91 +253,168 @@ export default function Productoras() {
 
       {/* Lista de productoras */}
       {productoras.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
+        <div className="text-center p-5 bg-light rounded">
+          <div className="mx-auto mb-3" style={{ width: 96, height: 96 }}>
+            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center w-100 h-100 border">
+              <svg width="48" height="48" className="text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
           </div>
-          <h3 className="text-xl font-medium text-gray-900 mb-2">No hay productoras registradas</h3>
-          <p className="text-gray-500 mb-6">
+          <h3 className="h5 mb-2">No hay productoras registradas</h3>
+          <p className="text-muted mb-3">
             El servidor backend no está devolviendo datos o no está ejecutándose.
           </p>
-          <div className="mt-4 text-sm text-gray-600">
-            <p><strong>URL del backend:</strong> http://localhost:3000</p>
-            <p><strong>Endpoint:</strong> /productoras</p>
+          <div className="small text-muted">
+            <p className="mb-0"><strong>URL del backend:</strong> http://localhost:3000</p>
+            <p className="mb-0"><strong>Endpoint:</strong> /productoras</p>
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="bg-orange-500 text-white px-4 py-2">
-            <h3 className="font-semibold">Lista de Productoras ({productoras.length})</h3>
+        <div className="card">
+          <div className="card-header bg-warning text-dark">
+            <h3 className="h6 mb-0">Lista de Productoras ({productoras.length})</h3>
           </div>
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="card-body">
+            <div className="row g-3">
               {productoras.map((productora, index) => (
-                <div key={productora.id || `productora-${index}`} className="bg-gray-50 p-4 rounded border">
-                  <div className="flex items-center mb-3">
-                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-orange-600 font-semibold text-sm">
-                        {(productora.nombre || '').charAt(0)}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {productora.nombre || 'Sin nombre'}
+                <div key={productora._id || `productora-${index}`} className="col-12 col-md-6 col-lg-4">
+                  <div className="card h-100">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-3">
+                        <div className="w-10 h-10 bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+                          <span className="text-warning fw-semibold small">
+                            {(productora.nombre || '').charAt(0)}
+                          </span>
+                        </div>
+                        <div className="flex-grow-1">
+                          {productoraEditando === productora._id ? (
+                            <div className="row g-2">
+                              <div className="col-12">
+                                <input 
+                                  className="form-control form-control-sm" 
+                                  value={productoraEditada.nombre} 
+                                  onChange={(e) => setProductoraEditada({...productoraEditada, nombre: e.target.value})} 
+                                  placeholder="Nombre"
+                                />
+                              </div>
+                              <div className="col-12">
+                                <input 
+                                  className="form-control form-control-sm" 
+                                  value={productoraEditada.slogan} 
+                                  onChange={(e) => setProductoraEditada({...productoraEditada, slogan: e.target.value})} 
+                                  placeholder="Slogan"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="fw-medium text-dark">
+                                {productora.nombre || 'Sin nombre'}
+                              </div>
+                              <div className="small text-muted">
+                                {productora.slogan || 'Sin slogan'}
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {productora.slogan || 'Sin slogan'}
+                      <div className="mb-3">
+                        <div className="small text-muted mb-1">Descripción</div>
+                        {productoraEditando === productora._id ? (
+                          <textarea
+                            className="form-control form-control-sm"
+                            value={productoraEditada.descripcion}
+                            onChange={(e) => setProductoraEditada({...productoraEditada, descripcion: e.target.value})}
+                            placeholder="Descripción"
+                            rows={2}
+                          />
+                        ) : (
+                          <div className="small text-dark" style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {productora.descripcion || 'Sin descripción'}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                  {productora.descripcion && (
-                    <div className="mb-3">
-                      <div className="text-xs text-gray-500 mb-1">Descripción</div>
-                      <div className="text-sm text-gray-700 overflow-hidden" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}>
-                        {productora.descripcion}
+                      <div className="mb-3">
+                        <div className="d-flex justify-content-between small">
+                          <div className="d-flex align-items-center">
+                            {productoraEditando === productora._id ? (
+                              <select 
+                                className="form-select form-select-sm" 
+                                value={productoraEditada.estado}
+                                onChange={(e) => setProductoraEditada({...productoraEditada, estado: e.target.value === 'true'})}
+                                style={{width: 'auto'}}
+                              >
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                              </select>
+                            ) : (
+                              <>
+                                <div className={`w-2 h-2 rounded-circle me-2 ${productora.estado ? 'bg-success' : 'bg-danger'}`}></div>
+                                <span className="text-muted">{productora.estado ? 'Activo' : 'Inactivo'}</span>
+                              </>
+                            )}
+                          </div>
+                          <span className="text-muted">
+                            {productora.fechaCreacion ? new Date(productora.fechaCreacion).toLocaleDateString() : 'N/A'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center">
-                        <div className={`w-2 h-2 rounded-full mr-2 ${productora.estado ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                        <span className="text-gray-500">{productora.estado ? 'Activo' : 'Inactivo'}</span>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="badge bg-light text-dark small">
+                          ID: {productora._id}
+                        </span>
+                        <div className="d-flex gap-1">
+                          {productoraEditando === productora._id ? (
+                            <>
+                              <button
+                                onClick={handleGuardarEdicion}
+                                className="btn btn-sm btn-success"
+                                title="Guardar cambios"
+                              >
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={handleCancelarEdicion}
+                                className="btn btn-sm btn-outline-secondary"
+                                title="Cancelar edición"
+                              >
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEditarProductora(productora)}
+                                className="btn btn-sm btn-outline-warning"
+                                title="Editar productora"
+                              >
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleEliminarProductora(productora._id)}
+                                className="btn btn-sm btn-outline-danger"
+                                title="Eliminar productora"
+                              >
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-gray-500">
-                        {productora.fechaCreacion ? new Date(productora.fechaCreacion).toLocaleDateString() : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
-                      ID: {productora.id}
-                    </span>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditarProductora(productora)}
-                        className="p-1 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded"
-                        title="Editar productora"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleEliminarProductora(productora.id)}
-                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
-                        title="Eliminar productora"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -341,8 +423,6 @@ export default function Productoras() {
           </div>
         </div>
       )}
-
-      {/* Debug eliminado */}
     </div>
   )
 }

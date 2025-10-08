@@ -102,34 +102,51 @@ export default function Tipo() {
                 <tr>
                   <th>Nombre</th>
                   <th>Descripción</th>
+                  <th>Fecha Creación</th>
+                  <th>Fecha Actualización</th>
                   <th>ID</th>
                   <th className="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {tipos.map((t)=> (
-                  <tr key={t.id}>
+                {tipos.map((t, index)=> (
+                  <tr key={t._id || `tipo-${index}`}>
                     <td>
-                      {editandoId === t.id ? (
+                      {editandoId === t._id ? (
                         <input className="form-control form-control-sm" value={editado.nombre} onChange={(e)=>setEditado({...editado, nombre:e.target.value})} />
                       ) : t.nombre}
                     </td>
                     <td>
-                      {editandoId === t.id ? (
-                        <input className="form-control form-control-sm" value={editado.descripcion} onChange={(e)=>setEditado({...editado, descripcion:e.target.value})} />
-                      ) : (t.descripcion || '—')}
+                      {editandoId === t._id ? (
+                        <textarea 
+                          className="form-control form-control-sm" 
+                          value={editado.descripcion} 
+                          onChange={(e)=>setEditado({...editado, descripcion:e.target.value})}
+                          rows="2"
+                        />
+                      ) : (
+                        <span className="small text-muted">
+                          {t.descripcion || '—'}
+                        </span>
+                      )}
                     </td>
-                    <td className="small text-muted">{t.id}</td>
+                    <td className="small text-muted">
+                      {t.fechaCreacion ? new Date(t.fechaCreacion).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="small text-muted">
+                      {t.fechaActualizacion ? new Date(t.fechaActualizacion).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="small text-muted">{t._id}</td>
                     <td className="text-end">
-                      {editandoId === t.id ? (
+                      {editandoId === t._id ? (
                         <>
                           <button className="btn btn-sm btn-success me-2" onClick={onGuardar}>Guardar</button>
                           <button className="btn btn-sm btn-outline-secondary" onClick={()=>{setEditandoId(null);setEditado({ nombre:"", descripcion:"" })}}>Cancelar</button>
                         </>
                       ) : (
                         <>
-                          <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>{setEditandoId(t.id); setEditado({ nombre: t.nombre || '', descripcion: t.descripcion || '' })}}>Editar</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={()=>onEliminar(t.id)}>Eliminar</button>
+                          <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>{setEditandoId(t._id); setEditado({ nombre: t.nombre || '', descripcion: t.descripcion || '' })}}>Editar</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={()=>onEliminar(t._id)}>Eliminar</button>
                         </>
                       )}
                     </td>

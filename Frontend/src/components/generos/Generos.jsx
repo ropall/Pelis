@@ -5,9 +5,9 @@ export default function Generos() {
   const [generos, setGeneros] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [nuevo, setNuevo] = useState({ nombre: "" })
+  const [nuevo, setNuevo] = useState({ nombre: "", descripcion: "", estado: true })
   const [editandoId, setEditandoId] = useState(null)
-  const [editado, setEditado] = useState({ nombre: "" })
+  const [editado, setEditado] = useState({ nombre: "", descripcion: "", estado: true })
 
   const listarGeneros = async () => {
     try {
@@ -30,10 +30,11 @@ export default function Generos() {
   const onCrear = async (e) => {
     e.preventDefault()
     const nombre = (nuevo.nombre || '').trim()
+    const descripcion = (nuevo.descripcion || '').trim()
     if (!nombre) return
     try {
-      await crearGenero({ nombre })
-      setNuevo({ nombre: "" })
+      await crearGenero({ nombre, descripcion, estado: nuevo.estado })
+      setNuevo({ nombre: "", descripcion: "", estado: true })
       listarGeneros()
     } catch (e) {
       setError("No se pudo crear el género")
@@ -42,11 +43,12 @@ export default function Generos() {
 
   const onGuardar = async () => {
     const nombre = (editado.nombre || '').trim()
+    const descripcion = (editado.descripcion || '').trim()
     if (!nombre) return
     try {
-      await editarGenero(editandoId, { nombre })
+      await editarGenero(editandoId, { nombre, descripcion, estado: editado.estado })
       setEditandoId(null)
-      setEditado({ nombre: "" })
+      setEditado({ nombre: "", descripcion: "", estado: true })
       listarGeneros()
     } catch (e) {
       setError("No se pudo actualizar el género")
@@ -101,12 +103,41 @@ export default function Generos() {
       <div className="card mb-3">
         <div className="card-header bg-success text-white">Crear nuevo género</div>
         <div className="card-body">
-          <form className="row g-2" onSubmit={onCrear}>
-            <div className="col-sm-10">
-              <input className="form-control" placeholder="Nombre del género *" value={nuevo.nombre} onChange={(e)=>setNuevo({ nombre: e.target.value })} required />
+          <form onSubmit={onCrear}>
+            <div className="row g-2 mb-2">
+              <div className="col-md-6">
+                <input className="form-control" placeholder="Nombre del género *" value={nuevo.nombre} onChange={(e)=>setNuevo({...nuevo, nombre: e.target.value })} required />
+              </div>
+              <div className="col-md-6 d-grid">
+                <button className="btn btn-success" type="submit">Guardar</button>
+              </div>
             </div>
-            <div className="col-sm-2 d-grid">
-              <button className="btn btn-success" type="submit">Guardar</button>
+            <div className="row g-2 mb-2">
+              <div className="col-12">
+                <textarea 
+                  className="form-control" 
+                  placeholder="Descripción del género (opcional)" 
+                  value={nuevo.descripcion} 
+                  onChange={(e)=>setNuevo({...nuevo, descripcion: e.target.value })}
+                  rows="2"
+                />
+              </div>
+            </div>
+            <div className="row g-2">
+              <div className="col-12 d-flex align-items-center">
+                <div className="form-check">
+                  <input 
+                    className="form-check-input" 
+                    type="checkbox" 
+                    id="estado"
+                    checked={nuevo.estado}
+                    onChange={(e)=>setNuevo({...nuevo, estado: e.target.checked})}
+                  />
+                  <label className="form-check-label" htmlFor="estado">
+                    Estado activo
+                  </label>
+                </div>
+              </div>
             </div>
           </form>
         </div>
@@ -122,29 +153,69 @@ export default function Generos() {
               <thead>
                 <tr>
                   <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Fecha Creación</th>
+                  <th>Fecha Actualización</th>
                   <th>ID</th>
                   <th className="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {generos.map((g, index) => (
-                  <tr key={g.id || `genero-${index}`}>
+                  <tr key={g._id || `genero-${index}`}>
                     <td>
-                      {editandoId === g.id ? (
-                        <input className="form-control form-control-sm" value={editado.nombre} onChange={(e)=>setEditado({ nombre: e.target.value })} />
+                      {editandoId === g._id ? (
+                        <input className="form-control form-control-sm" value={editado.nombre} onChange={(e)=>setEditado({...editado, nombre: e.target.value })} />
                       ) : g.nombre}
                     </td>
-                    <td className="small text-muted">{g.id}</td>
+                    <td>
+                      {editandoId === g._id ? (
+                        <textarea 
+                          className="form-control form-control-sm" 
+                          value={editado.descripcion} 
+                          onChange={(e)=>setEditado({...editado, descripcion: e.target.value })}
+                          rows="2"
+                        />
+                      ) : (
+                        <span className="small text-muted">
+                          {g.descripcion || '—'}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {editandoId === g._id ? (
+                        <select 
+                          className="form-select form-select-sm" 
+                          value={editado.estado}
+                          onChange={(e)=>setEditado({...editado, estado: e.target.value === 'true'})}
+                        >
+                          <option value="true">Activo</option>
+                          <option value="false">Inactivo</option>
+                        </select>
+                      ) : (
+                        <span className={`badge ${g.estado ? 'bg-success' : 'bg-danger'}`}>
+                          {g.estado ? 'Activo' : 'Inactivo'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="small text-muted">
+                      {g.fechaCreacion ? new Date(g.fechaCreacion).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="small text-muted">
+                      {g.fechaActualizacion ? new Date(g.fechaActualizacion).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="small text-muted">{g._id}</td>
                     <td className="text-end">
-                      {editandoId === g.id ? (
+                      {editandoId === g._id ? (
                         <>
                           <button className="btn btn-sm btn-success me-2" onClick={onGuardar}>Guardar</button>
-                          <button className="btn btn-sm btn-outline-secondary" onClick={()=>{setEditandoId(null); setEditado({ nombre: "" })}}>Cancelar</button>
+                          <button className="btn btn-sm btn-outline-secondary" onClick={()=>{setEditandoId(null); setEditado({ nombre: "", descripcion: "", estado: true })}}>Cancelar</button>
                         </>
                       ) : (
                         <>
-                          <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>{setEditandoId(g.id); setEditado({ nombre: g.nombre || '' })}}>Editar</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={()=>onEliminar(g.id)}>Eliminar</button>
+                          <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>{setEditandoId(g._id); setEditado({ nombre: g.nombre || '', descripcion: g.descripcion || '', estado: g.estado !== undefined ? g.estado : true })}}>Editar</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={()=>onEliminar(g._id)}>Eliminar</button>
                         </>
                       )}
                     </td>

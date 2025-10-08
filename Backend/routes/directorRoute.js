@@ -3,7 +3,8 @@ const {
 	createDirector,
 	getDirectores,
 	getDirectoresByEstado,
-	updateDirector
+	updateDirector,
+	deleteDirector
 } = require('../controllers/directorController')
 const { validarNombreDirectorUnico } = require('../middlewares/directorMiddleware')
 
@@ -117,6 +118,29 @@ router.get('/estado', getDirectoresByEstado)
  *         description: Error en el servidor
  */
 router.put('/:id', validarNombreDirectorUnico, updateDirector)
+
+/**
+ * @swagger
+ * /directores/{id}:
+ *   delete:
+ *     summary: Elimina un director por ID
+ *     tags: [Directores]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del director
+ *     responses:
+ *       200:
+ *         description: Director eliminado
+ *       404:
+ *         description: Director no encontrado
+ *       500:
+ *         description: Error en el servidor
+ */
+router.delete('/:id', deleteDirector)
 
 module.exports = router
 
